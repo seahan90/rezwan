@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trajectory</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #0a0a0f, #12121a);
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #e6e6e6;
+}
+
+.container {
+  width: 560px;
+  background: #14141d;
+  padding: 50px;
+  border-radius: 14px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.title {
+  font-size: 1.6rem;
+  letter-spacing: 1px;
+  margin-bottom: 30px;
+  color: #9af7d0;
+}
+
+.text {
+  min-height: 80px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  color: #cfcfd6;
+}
+
+.choices button {
+  width: 100%;
+  margin: 8px 0;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid #2a2a38;
+  color: #e6e6e6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: left;
+}
+
+.choices button:hover {
+  border-color: #9af7d0;
+  background: rgba(154,247,208,0.06);
+}
+
+.result {
+  margin-top: 25px;
+  font-size: 1.25rem;
+  color: #9af7d0;
+}
+
+.footer {
+  margin-top: 40px;
+  font-size: 0.8rem;
+  opacity: 0.5;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="title">Trajectory Assessment</div>
+  <div id="text" class="text"></div>
+  <div id="choices" class="choices"></div>
+  <div id="result" class="result"></div>
+  <div class="footer">Decision model v3.1</div>
+</div>
+
+<script>
+const state = {
+  curiosity: 0,
+  persistence: 0,
+  impact: 0
+};
+
+const scenes = {
+
+start: {
+  text: "Early aptitude detected. Primary motivation?",
+  choices: [
+    { label: "Understanding life at the molecular level", effect: { curiosity: 2 }, next: "study" },
+    { label: "Solving real-world health problems", effect: { impact: 2 }, next: "study" },
+    { label: "Pushing limits of science itself", effect: { persistence: 2 }, next: "study" }
+  ]
+},
+
+study: {
+  text: "Academic specialization selected.",
+  choices: [
+    { label: "Cellular and Molecular Biology", effect: { curiosity: 2 }, next: "challenge" },
+    { label: "Biomedical Engineering", effect: { impact: 2 }, next: "challenge" },
+    { label: "Genetic Research", effect: { persistence: 2 }, next: "challenge" }
+  ]
+},
+
+challenge: {
+  text: "Research failure encountered. Response?",
+  choices: [
+    { label: "Analyze data and iterate", effect: { persistence: 2 }, next: "focus" },
+    { label: "Redesign experiment structure", effect: { curiosity: 1, persistence: 1 }, next: "focus" },
+    { label: "Shift toward applied solutions", effect: { impact: 2 }, next: "focus" }
+  ]
+},
+
+focus: {
+  text: "Long-term direction established.",
+  choices: [
+    { label: "Therapeutic development", effect: { impact: 2 }, next: "end" },
+    { label: "Biological systems research", effect: { curiosity: 2 }, next: "end" },
+    { label: "Translational innovation", effect: { impact: 1, persistence: 1 }, next: "end" }
+  ]
+}
+
+};
+
+function applyEffect(effect) {
+  for (let key in effect) {
+    state[key] += effect[key];
+  }
+}
+
+function showScene(sceneKey) {
+  const scene = scenes[sceneKey];
+  document.getElementById("text").textContent = scene.text;
+
+  const choicesDiv = document.getElementById("choices");
+  choicesDiv.innerHTML = "";
+
+  scene.choices.forEach(choice => {
+    const btn = document.createElement("button");
+    btn.textContent = choice.label;
+    btn.onclick = () => {
+      applyEffect(choice.effect);
+      if (choice.next === "end") {
+        showEnding();
+      } else {
+        showScene(choice.next);
+      }
+    };
+    choicesDiv.appendChild(btn);
+  });
+}
+
+function showEnding() {
+  document.getElementById("choices").innerHTML = "";
+  document.getElementById("text").textContent = "Trajectory resolved.";
+
+  const score = state.curiosity + state.persistence + state.impact;
+
+  let message = "";
+
+  if (score >= 6) {
+    message = "Outcome: She becomes a Biotech Engineer.";
+  } else {
+    message = "Outcome: Scientific career path achieved → Biotech Engineering specialization.";
+  }
+
+  document.getElementById("result").textContent = message;
+
+  const restartBtn = document.createElement("button");
+  restartBtn.textContent = "Restart assessment";
+  restartBtn.onclick = () => location.reload();
+  document.getElementById("choices").appendChild(restartBtn);
+}
+
+showScene("start");
+</script>
+
+</body>
+</html>
